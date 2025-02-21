@@ -1,38 +1,93 @@
-Question Explanation:
+import java.util.*;
 
-writing a Java program to calculate the sum of a list of integers using autoboxing and unboxing, along with methods to parse strings into their respective wrapper classes (e.g., Integer.parseInt()).
+class TicketBookingSystem {
+    private boolean[] seats;
 
-Steps to implement:
-1. Create a List of Integers: Initialize a List<Integer> to hold the integers.
-2. Autoboxing: Use autoboxing to convert primitive int values to Integer objects automatically when adding to the list.
-3. Unboxing: Use unboxing to convert Integer objects back to int for sum calculation.
-4. Parse Strings: Create a utility method to parse strings to integers using Integer.parseInt().
-5. Calculate the Sum: Use a loop or Java 8 streams to calculate the sum of the list.
+    public TicketBookingSystem(int numberOfSeats) {
+        seats = new boolean[numberOfSeats];
+    }
 
-  
-Java Program:
+    public synchronized boolean bookSeat(int seatNumber, String user) {
+        if (seatNumber < 0 || seatNumber >= seats.length) {
+            System.out.println(user + " attempted to book an invalid seat: " + seatNumber);
+            return false;
+        }
+        if (!seats[seatNumber]) {
+            seats[seatNumber] = true;
+            System.out.println(user + " successfully booked seat " + seatNumber);
+            return true;
+        } else {
+            System.out.println(user + " attempted to book an already booked seat: " + seatNumber);
+            return false;
+        }
+    }
+}
 
-parseStringToInteger(): This method parses a string into an Integer. It catches any NumberFormatException if the string is not a valid number.
-calculateSum(): This method calculates the sum of a list of integers. Java automatically performs unboxing when adding Integer values to sum (an int).
+class User extends Thread {
+    private TicketBookingSystem system;
+    private int seatNumber;
+    private String userType;
 
+    public User(TicketBookingSystem system, int seatNumber, String userType, int priority) {
+        this.system = system;
+        this.seatNumber = seatNumber;
+        this.userType = userType;
+        this.setPriority(priority);
+    }
 
+    @Override
+    public void run() {
+        system.bookSeat(seatNumber, userType);
+    }
+}
 
+public class TicketBooking {
+    public static void main(String[] args) {
+        int numberOfSeats = 10;
+        TicketBookingSystem system = new TicketBookingSystem(numberOfSeats);
+        
+        List<Thread> users = new ArrayList<>();
+        users.add(new User(system, 2, "VIP User 1", Thread.MAX_PRIORITY));
+        users.add(new User(system, 5, "VIP User 2", Thread.MAX_PRIORITY));
+        users.add(new User(system, 2, "Regular User 1", Thread.NORM_PRIORITY));
+        users.add(new User(system, 5, "Regular User 2", Thread.NORM_PRIORITY));
+        users.add(new User(system, 7, "Regular User 3", Thread.MIN_PRIORITY));
+        
+        for (Thread user : users) {
+            user.start();
+        }
+        
+        for (Thread user : users) {
+            try {
+                user.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        System.out.println("Booking process completed.");
+        
+        // Autoboxing and Unboxing Example
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+        int sum = calculateSum(numbers);
+        System.out.println("Sum of numbers: " + sum);
+    }
+    
+    public static int parseStringToInteger(String number) {
+        try {
+            return Integer.parseInt(number);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid number format: " + number);
+            return 0;
+        }
+    }
+    
+    public static int calculateSum(List<Integer> numbers) {
+        int sum = 0;
+        for (int num : numbers) { // Unboxing
+            sum += num;
+        }
+        return sum;
+    }
+}
 
-Test Cases:
-
-Test Case 1:
-Input: 10, 20, 30, "40", "50"
-Expected Output: The sum of the list is: 150
-Description: The list contains a mix of primitive integers and integers parsed from strings.
-
-Test Case 2:
-Input: "100", "200", "300"
-Expected Output: The sum of the list is: 600
-Description: All values are parsed from strings, and the sum is calculated.
-
-Test Case 3:
-Input: "50", "invalid", "70"
-Expected Output:
-Invalid number format: invalid
-The sum of the list is: 120
-Description: One of the inputs is not a valid integer, so it's skipped, and the sum of valid values is calculated.
