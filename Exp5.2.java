@@ -1,37 +1,92 @@
-Java program that serializes and deserializes a Student object. It saves the Student object to a file and then reads it back, displaying the student details.
-The program handles exceptions like FileNotFoundException, IOException, and ClassNotFoundException.
+import java.util.*;
 
-Steps:
-1. Create a Student class with id, name, and GPA.
-2. Serialize the Student object: Convert the object to a byte stream and save it to a file.
-3. Deserialize the Student object: Read the byte stream from the file and convert it back into an object.
-4. Exception handling: Handle possible exceptions such as FileNotFoundException, IOException, and ClassNotFoundException.
+class TicketBookingSystem {
+    private boolean[] seats;
 
+    public TicketBookingSystem(int numberOfSeats) {
+        seats = new boolean[numberOfSeats];
+    }
 
-----Implementation
----Student Class: The Student class implements the Serializable interface, allowing it to be serialized. It has three fields: id, name, and gpa.
----serializeStudent(): This method serializes a Student object to a file using ObjectOutputStream. The object is written to a file named student.ser.
----deserializeStudent(): This method deserializes the Student object from the file using ObjectInputStream. If successful, it returns the deserialized Student object.
----Exception Handling: The program handles FileNotFoundException, IOException, and ClassNotFoundException during the serialization and deserialization processes.
+    public synchronized boolean bookSeat(int seatNumber, String user) {
+        if (seatNumber < 0 || seatNumber >= seats.length) {
+            System.out.println(user + " attempted to book an invalid seat: " + seatNumber);
+            return false;
+        }
+        if (!seats[seatNumber]) {
+            seats[seatNumber] = true;
+            System.out.println(user + " successfully booked seat " + seatNumber);
+            return true;
+        } else {
+            System.out.println(user + " attempted to book an already booked seat: " + seatNumber);
+            return false;
+        }
+    }
+}
 
+class User extends Thread {
+    private TicketBookingSystem system;
+    private int seatNumber;
+    private String userType;
 
+    public User(TicketBookingSystem system, int seatNumber, String userType, int priority) {
+        this.system = system;
+        this.seatNumber = seatNumber;
+        this.userType = userType;
+        this.setPriority(priority);
+    }
 
-Test Cases:
+    @Override
+    public void run() {
+        system.bookSeat(seatNumber, userType);
+    }
+}
 
-Test Case 1: Serialize and Deserialize a valid student object.
-  
-Input: Student(1, "John Doe", 3.75)
-Expected Output:
-Student object has been serialized and saved to file.
-Student object has been deserialized.
-Deserialized Student Details:
-Student ID: 1, Name: John Doe, GPA: 3.75
-  
-Test Case 2: Try to deserialize from a non-existent file.
-Expected Output:
-Error: File not found.
-  
-Test Case 3: Handle invalid class during deserialization.
-Input: Manually modify the class file to simulate a ClassNotFoundException.
-Expected Output:
-Error: Class not found.
+public class TicketBooking {
+    public static void main(String[] args) {
+        int numberOfSeats = 10;
+        TicketBookingSystem system = new TicketBookingSystem(numberOfSeats);
+        
+        List<Thread> users = new ArrayList<>();
+        users.add(new User(system, 2, "VIP User 1", Thread.MAX_PRIORITY));
+        users.add(new User(system, 5, "VIP User 2", Thread.MAX_PRIORITY));
+        users.add(new User(system, 2, "Regular User 1", Thread.NORM_PRIORITY));
+        users.add(new User(system, 5, "Regular User 2", Thread.NORM_PRIORITY));
+        users.add(new User(system, 7, "Regular User 3", Thread.MIN_PRIORITY));
+        
+        for (Thread user : users) {
+            user.start();
+        }
+        
+        for (Thread user : users) {
+            try {
+                user.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        System.out.println("Booking process completed.");
+        
+        // Autoboxing and Unboxing Example
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+        int sum = calculateSum(numbers);
+        System.out.println("Sum of numbers: " + sum);
+    }
+    
+    public static int parseStringToInteger(String number) {
+        try {
+            return Integer.parseInt(number);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid number format: " + number);
+            return 0;
+        }
+    }
+    
+    public static int calculateSum(List<Integer> numbers) {
+        int sum = 0;
+        for (int num : numbers) { // Unboxing
+            sum += num;
+        }
+        return sum;
+    }
+}
