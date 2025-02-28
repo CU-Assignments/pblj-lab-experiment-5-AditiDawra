@@ -1,23 +1,4 @@
-import java.io.*;
 import java.util.*;
-
-class Student implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private int id;
-    private String name;
-    private double gpa;
-
-    public Student(int id, String name, double gpa) {
-        this.id = id;
-        this.name = name;
-        this.gpa = gpa;
-    }
-
-    @Override
-    public String toString() {
-        return "Student{id=" + id + ", name='" + name + "', gpa=" + gpa + "}";
-    }
-}
 
 class TicketBookingSystem {
     private boolean[] seats;
@@ -90,12 +71,6 @@ public class TicketBooking {
         List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
         int sum = calculateSum(numbers);
         System.out.println("Sum of numbers: " + sum);
-        
-        // Serialization and Deserialization Example
-        Student student = new Student(1, "John Doe", 3.8);
-        serializeStudent(student);
-        Student deserializedStudent = deserializeStudent();
-        System.out.println("Deserialized Student: " + deserializedStudent);
     }
     
     public static int parseStringToInteger(String number) {
@@ -114,27 +89,4 @@ public class TicketBooking {
         }
         return sum;
     }
-    
-    public static void serializeStudent(Student student) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("student.ser"))) {
-            oos.writeObject(student);
-            System.out.println("Student serialized successfully.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public static Student deserializeStudent() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("student.ser"))) {
-            return (Student) ois.readObject();
-        } catch (FileNotFoundException e) {
-            System.out.println("File not found.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            System.out.println("Class not found.");
-        }
-        return null;
-    }
 }
-
